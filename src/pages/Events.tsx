@@ -1,28 +1,134 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import anime from 'animejs/lib/anime.es.js';
 import { Calendar, Clock, MapPin, ExternalLink, Users, Sparkles } from 'lucide-react';
 import { events } from '../data/events';
 
 const Events: React.FC = () => {
-  const [selectedEvent, setSelectedEvent] = React.useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const eventsRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.title = 'رویدادها - مدیریت سلامت نقره‌ای';
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+  useEffect(() => {
+    // Hero animation
+    anime({
+      targets: heroRef.current,
+      opacity: [0, 1],
+      translateY: [20, 0],
+      duration: 600,
+      easing: 'easeOutExpo'
+    });
+
+    // Events animation with intersection observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            anime({
+              targets: eventsRef.current?.children,
+              opacity: [0, 1],
+              translateY: [20, 0],
+              duration: 400,
+              delay: anime.stagger(50),
+              easing: 'easeOutExpo'
+            });
+
+            anime({
+              targets: ctaRef.current,
+              opacity: [0, 1],
+              translateY: [20, 0],
+              duration: 400,
+              delay: 800,
+              easing: 'easeOutExpo'
+            });
+
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (eventsRef.current) {
+      observer.observe(eventsRef.current);
     }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    // Modal animation
+    if (selectedEvent && modalRef.current) {
+      anime({
+        targets: modalRef.current,
+        opacity: [0, 1],
+        duration: 200,
+        easing: 'easeOutQuad'
+      });
+
+      anime({
+        targets: modalRef.current.querySelector('.modal-content'),
+        scale: [0.9, 1],
+        opacity: [0, 1],
+        duration: 200,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [selectedEvent]);
+
+  const handleCardHover = (e: React.MouseEvent, isEntering: boolean) => {
+    anime({
+      targets: e.currentTarget,
+      scale: isEntering ? 1.02 : 1,
+      translateY: isEntering ? -8 : 0,
+      duration: 200,
+      easing: 'easeOutQuad'
+    });
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } }
+  const handleButtonHover = (e: React.MouseEvent, isEntering: boolean) => {
+    anime({
+      targets: e.currentTarget,
+      scale: isEntering ? 1.05 : 1,
+      translateY: isEntering ? -3 : 0,
+      duration: 200,
+      easing: 'easeOutQuad'
+    });
+  };
+
+  const handleButtonTap = (e: React.MouseEvent, isPressed: boolean) => {
+    anime({
+      targets: e.currentTarget,
+      scale: isPressed ? 0.95 : 1,
+      duration: 100,
+      easing: 'easeOutQuad'
+    });
+  };
+
+  const handleCloseModal = () => {
+    if (modalRef.current) {
+      anime({
+        targets: modalRef.current.querySelector('.modal-content'),
+        scale: [1, 0.9],
+        opacity: [1, 0],
+        duration: 200,
+        easing: 'easeOutQuad'
+      });
+
+      anime({
+        targets: modalRef.current,
+        opacity: [1, 0],
+        duration: 200,
+        delay: 100,
+        easing: 'easeOutQuad',
+        complete: () => setSelectedEvent(null)
+      });
+    }
   };
 
   return (
@@ -30,11 +136,10 @@ const Events: React.FC = () => {
       {/* Hero Section */}
       <section className="py-16 lg:py-20 relative" style={{ marginTop: '15px' }}>
         <div className="blur-sheet rounded-3xl mx-4 sm:mx-6 lg:mx-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+          <div
+            ref={heroRef}
             className="relative z-10 container mx-auto px-8 sm:px-12 lg:px-16 py-12 text-center"
+            style={{ opacity: 0 }}
           >
             <div className="inline-flex items-center space-x-2 space-x-reverse bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-6 py-3 mb-8">
               <Sparkles className="w-5 h-5 text-purple-600" />
@@ -46,26 +151,22 @@ const Events: React.FC = () => {
             <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed font-semibold">
               به برنامه‌های آموزشی و علمی ما بپیوندید
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Events List */}
       <section className="py-4" style={{ marginTop: '15px' }}>
         <div className="blur-sheet rounded-3xl mx-4 sm:mx-6 lg:mx-8">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className="container mx-auto px-8 sm:px-12 lg:px-16 py-8"
-          >
-            <div className="space-y-8">
+          <div className="container mx-auto px-8 sm:px-12 lg:px-16 py-8">
+            <div ref={eventsRef} className="space-y-8">
               {events.map((event, index) => (
-                <motion.div
+                <div
                   key={event.id}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02, y: -8 }}
                   className="group"
+                  style={{ opacity: 0 }}
+                  onMouseEnter={(e) => handleCardHover(e, true)}
+                  onMouseLeave={(e) => handleCardHover(e, false)}
                 >
                   <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-200">
                     <div className="lg:flex">
@@ -121,40 +222,41 @@ const Events: React.FC = () => {
 
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
-                          <motion.a
+                          <a
                             href={event.registrationUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05, y: -3 }}
-                            whileTap={{ scale: 0.95 }}
                             className="flex items-center justify-center space-x-2 space-x-reverse bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-purple-600 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl font-black transition-all duration-200"
+                            onMouseEnter={(e) => handleButtonHover(e, true)}
+                            onMouseLeave={(e) => handleButtonHover(e, false)}
+                            onMouseDown={(e) => handleButtonTap(e, true)}
+                            onMouseUp={(e) => handleButtonTap(e, false)}
                           >
                             <Users className="w-5 h-5" />
                             <span>ثبت‌نام در رویداد</span>
                             <ExternalLink className="w-4 h-4" />
-                          </motion.a>
+                          </a>
                           
-                          <motion.button
-                            whileHover={{ scale: 1.05, y: -3 }}
-                            whileTap={{ scale: 0.95 }}
+                          <button
                             onClick={() => setSelectedEvent(event.id)}
                             className="flex items-center justify-center space-x-2 space-x-reverse bg-white/30 backdrop-blur-md border border-white/40 text-gray-700 hover:text-purple-600 px-8 py-4 rounded-2xl font-black transition-all duration-200"
+                            onMouseEnter={(e) => handleButtonHover(e, true)}
+                            onMouseLeave={(e) => handleButtonHover(e, false)}
+                            onMouseDown={(e) => handleButtonTap(e, true)}
+                            onMouseUp={(e) => handleButtonTap(e, false)}
                           >
                             <span>اطلاعات کامل</span>
-                          </motion.button>
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {/* Future Events Note */}
-            <motion.div
-              variants={itemVariants}
-              className="mt-16 text-center"
-            >
+            <div ref={ctaRef} className="mt-16 text-center" style={{ opacity: 0 }}>
               <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-3xl p-10 max-w-2xl mx-auto">
                 <h3 className="text-2xl font-black text-gray-800 mb-6">
                   رویدادهای بیشتر در راه است
@@ -162,33 +264,32 @@ const Events: React.FC = () => {
                 <p className="text-gray-700 mb-8 leading-relaxed font-semibold text-lg">
                   برای اطلاع از جدیدترین رویدادها و برنامه‌های آموزشی، در خبرنامه ما عضو شوید
                 </p>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   className="bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-purple-600 hover:to-emerald-600 text-white px-10 py-4 rounded-2xl font-black text-lg transition-all duration-200"
+                  onMouseEnter={(e) => handleButtonHover(e, true)}
+                  onMouseLeave={(e) => handleButtonHover(e, false)}
+                  onMouseDown={(e) => handleButtonTap(e, true)}
+                  onMouseUp={(e) => handleButtonTap(e, false)}
                 >
                   عضویت در خبرنامه
-                </motion.button>
+                </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Event Detail Modal */}
       {selectedEvent && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
+          ref={modalRef}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setSelectedEvent(null)}
+          style={{ opacity: 0 }}
+          onClick={handleCloseModal}
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white/90 backdrop-blur-md border border-white/40 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+          <div
+            className="modal-content bg-white/90 backdrop-blur-md border border-white/40 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            style={{ opacity: 0, transform: 'scale(0.9)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
@@ -222,7 +323,7 @@ const Events: React.FC = () => {
                   
                   <div className="flex space-x-4 space-x-reverse">
                     <button
-                      onClick={() => setSelectedEvent(null)}
+                      onClick={handleCloseModal}
                       className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                     >
                       بستن
@@ -239,8 +340,8 @@ const Events: React.FC = () => {
                 </div>
               );
             })()}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );
