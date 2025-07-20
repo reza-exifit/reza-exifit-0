@@ -1,116 +1,37 @@
-import React, { useEffect, useRef } from 'react';
-import anime from 'animejs/lib/anime.es.js';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Users, Sparkles } from 'lucide-react';
 import { teamMembers } from '../../data/team';
 
 const TeamSection: React.FC = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Header animation
-            anime({
-              targets: headerRef.current,
-              opacity: [0, 1],
-              translateY: [20, 0],
-              duration: 600,
-              easing: 'easeOutExpo'
-            });
-
-            // Grid items staggered animation
-            anime({
-              targets: gridRef.current?.children,
-              opacity: [0, 1],
-              translateY: [20, 0],
-              duration: 400,
-              delay: anime.stagger(50, { start: 200 }),
-              easing: 'easeOutExpo'
-            });
-
-            // CTA animation
-            anime({
-              targets: ctaRef.current,
-              opacity: [0, 1],
-              translateY: [20, 0],
-              duration: 400,
-              delay: 800,
-              easing: 'easeOutExpo'
-            });
-
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '-50px' }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
     }
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleCardHover = (e: React.MouseEvent, isEntering: boolean) => {
-    anime({
-      targets: e.currentTarget,
-      translateY: isEntering ? -4 : 0,
-      scale: isEntering ? 1.02 : 1,
-      duration: 200,
-      easing: 'easeOutQuad'
-    });
   };
 
-  const handleButtonHover = (e: React.MouseEvent, isEntering: boolean) => {
-    anime({
-      targets: e.currentTarget,
-      scale: isEntering ? 1.02 : 1,
-      duration: 200,
-      easing: 'easeOutQuad'
-    });
-  };
-
-  const handleButtonTap = (e: React.MouseEvent, isPressed: boolean) => {
-    anime({
-      targets: e.currentTarget,
-      scale: isPressed ? 0.98 : 1,
-      duration: 100,
-      easing: 'easeOutQuad'
-    });
-  };
-
-  const handleCTAButtonHover = (e: React.MouseEvent, isEntering: boolean) => {
-    anime({
-      targets: e.currentTarget,
-      scale: isEntering ? 1.05 : 1,
-      translateY: isEntering ? -2 : 0,
-      duration: 200,
-      easing: 'easeOutQuad'
-    });
-  };
-
-  const handleCTAButtonTap = (e: React.MouseEvent, isPressed: boolean) => {
-    anime({
-      targets: e.currentTarget,
-      scale: isPressed ? 0.95 : 1,
-      duration: 100,
-      easing: 'easeOutQuad'
-    });
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } }
   };
 
   return (
-    <section ref={sectionRef} className="py-4 relative" style={{ marginTop: '15px' }}>
+    <section className="py-4 relative" style={{ marginTop: '15px' }}>
       <div className="mx-4 sm:mx-6 lg:mx-8">
         <div className="blur-sheet rounded-3xl">
-          <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={containerVariants}
+            className="container mx-auto px-6 sm:px-8 lg:px-12 py-8"
+          >
             {/* Section Header */}
-            <div ref={headerRef} className="text-center mb-8" style={{ opacity: 0 }}>
+            <motion.div variants={itemVariants} className="text-center mb-8">
               <div className="inline-flex items-center space-x-2 space-x-reverse bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 mb-4">
                 <Users className="w-4 h-4 text-purple-600" />
                 <span className="text-gray-800 font-bold text-sm">تیم متخصص ما</span>
@@ -121,17 +42,16 @@ const TeamSection: React.FC = () => {
               <p className="text-base text-gray-700 max-w-2xl mx-auto font-bold">
                 تیمی از بهترین متخصصان فناوری سلامت که آینده را می‌سازند
               </p>
-            </div>
+            </motion.div>
 
             {/* Team Grid - Minimal Design */}
-            <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {teamMembers.map((member, index) => (
-                <div
+                <motion.div
                   key={member.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -4, scale: 1.02 }}
                   className="group"
-                  style={{ opacity: 0 }}
-                  onMouseEnter={(e) => handleCardHover(e, true)}
-                  onMouseLeave={(e) => handleCardHover(e, false)}
                 >
                   <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200">
                     {/* Member Image - Smaller */}
@@ -173,23 +93,24 @@ const TeamSection: React.FC = () => {
                       </div>
 
                       {/* Contact Button - Smaller */}
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className="w-full bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-purple-600 hover:to-emerald-600 text-white py-2 rounded-lg font-bold text-xs transition-all duration-200"
-                        onMouseEnter={(e) => handleButtonHover(e, true)}
-                        onMouseLeave={(e) => handleButtonHover(e, false)}
-                        onMouseDown={(e) => handleButtonTap(e, true)}
-                        onMouseUp={(e) => handleButtonTap(e, false)}
                       >
                         مشاهده پروفایل
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             {/* Call to Action - Compact */}
-            <div ref={ctaRef} className="text-center mt-8" style={{ opacity: 0 }}>
+            <motion.div
+              variants={itemVariants}
+              className="text-center mt-8"
+            >
               <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl p-6 max-w-lg mx-auto">
                 <h3 className="text-lg font-black text-gray-800 mb-3">
                   به تیم ما بپیوندید
@@ -197,18 +118,16 @@ const TeamSection: React.FC = () => {
                 <p className="text-gray-700 mb-4 font-semibold text-sm">
                   در حال جستجوی استعدادهای جدید برای توسعه آینده سلامت دیجیتال
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   className="bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-purple-600 hover:to-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm transition-all duration-200"
-                  onMouseEnter={(e) => handleCTAButtonHover(e, true)}
-                  onMouseLeave={(e) => handleCTAButtonHover(e, false)}
-                  onMouseDown={(e) => handleCTAButtonTap(e, true)}
-                  onMouseUp={(e) => handleCTAButtonTap(e, false)}
                 >
                   مشاهده فرصت‌های شغلی
-                </button>
+                </motion.button>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>
