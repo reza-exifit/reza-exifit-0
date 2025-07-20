@@ -34,12 +34,12 @@ const Header: React.FC = () => {
         <div className="px-4 lg:px-6">
           <div className="flex justify-between items-center h-14 lg:h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 space-x-reverse flex-shrink-0">
+            <Link to="/" className="flex items-center space-x-2 space-x-reverse flex-shrink-0 logo-link">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.1 }}
-                className="flex items-center space-x-2 space-x-reverse"
+                className="flex items-center space-x-2 space-x-reverse focus:outline-none"
               >
                 <Heart className="w-6 h-6 text-purple-500" />
                 <span className="text-base sm:text-lg lg:text-xl font-black bg-gradient-to-r from-purple-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
@@ -58,19 +58,9 @@ const Header: React.FC = () => {
                     location.pathname === item.path
                       ? 'text-purple-600 bg-white/20 backdrop-blur-xl'
                       : 'text-gray-800 hover:text-purple-600 hover:bg-white/10'
-                  } focus:outline-none focus:ring-0`}
+                  }`}
                 >
                   {item.label}
-                  {location.pathname === item.path && (
-                    <motion.div
-                      layoutId="activeTab"
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-emerald-500 rounded-full"
-                    />
-                  )}
                 </Link>
               ))}
             </nav>

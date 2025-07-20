@@ -26,9 +26,18 @@ body {
 }
 
 /* Remove focus outline for navigation items */
-a:focus, button:focus {
+a:focus, button:focus, .logo-link:focus {
   outline: none !important;
   box-shadow: none !important;
+  border: none !important;
+}
+
+/* Remove any selection styling from logo */
+.logo-link:focus, .logo-link:active, .logo-link:visited {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: none !important;
 }
 
 /* Custom scrollbar */

@@ -97,23 +97,6 @@ const Hero: React.FC = () => {
             </Link>
           </motion.div>
 
-          {/* Scroll Indicator - Inside the hero card */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            onClick={scrollToContent}
-            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-gray-700 hover:text-gray-900 transition-colors z-20"
-          >
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ repeat: Infinity, duration: 1.2 }}
-              className="flex flex-col items-center space-y-2"
-            >
-              <span className="text-sm font-bold">ادامه مطالب</span>
-              <ChevronDown className="w-6 h-6" />
-            </motion.div>
-          </motion.button>
         </motion.div>
       </div>
     </section>
